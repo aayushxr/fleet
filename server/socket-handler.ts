@@ -3,6 +3,7 @@ import type { ClientToServerEvents, ServerToClientEvents, SocketData, SystemEven
 import { randomUUID } from "crypto";
 import { joinRoomSchema, sendMessageSchema, setTTLSchema } from "./validators";
 import { store } from "./store";
+import { handleCallLeave } from "./call-handler";
 
 type IOServer = Server<ClientToServerEvents, ServerToClientEvents, Record<string, never>, SocketData>;
 type IOSocket = Socket<ClientToServerEvents, ServerToClientEvents, Record<string, never>, SocketData>;
@@ -134,6 +135,7 @@ export function registerSocketHandlers(io: IOServer): void {
 }
 
 function leaveCurrentRoom(io: IOServer, socket: IOSocket): void {
+  handleCallLeave(io, socket);
   const result = store.removeUserFromRoom(socket.id);
   if (result) {
     socket.to(result.roomId).emit("user-left", { userId: socket.id, entry: result.entry });

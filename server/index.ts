@@ -3,6 +3,7 @@ import next from "next";
 import { Server } from "socket.io";
 import type { ClientToServerEvents, ServerToClientEvents, SocketData } from "@/lib/types";
 import { registerSocketHandlers } from "./socket-handler";
+import { registerCallHandlers } from "./call-handler";
 import { startCleanup } from "./cleanup";
 
 const dev = process.env.NODE_ENV !== "production";
@@ -25,6 +26,7 @@ app.prepare().then(() => {
   );
 
   registerSocketHandlers(io);
+  registerCallHandlers(io);
   const cleanupInterval = startCleanup(io);
 
   httpServer.listen(port, () => {

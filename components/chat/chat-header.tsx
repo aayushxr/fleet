@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Separator } from "@/components/ui/separator";
 import { ConnectionStatus } from "./connection-status";
+import { CallButton } from "@/components/call/call-button";
 
 interface ChatHeaderProps {
   displayName: string;
@@ -19,6 +20,10 @@ interface ChatHeaderProps {
   ttlMinutes: number;
   onLeave: () => void;
   onOpenSidebar?: () => void;
+  callActive?: boolean;
+  inCall?: boolean;
+  onStartCall?: () => void;
+  onJoinCall?: () => void;
 }
 
 export function ChatHeader({
@@ -28,6 +33,10 @@ export function ChatHeader({
   ttlMinutes,
   onLeave,
   onOpenSidebar,
+  callActive = false,
+  inCall = false,
+  onStartCall,
+  onJoinCall,
 }: ChatHeaderProps) {
   const copyLink = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -35,7 +44,7 @@ export function ChatHeader({
   };
 
   return (
-    <header className="flex items-center gap-3 border-b px-4 py-3 h-14">
+    <header className="flex items-center gap-3 border-b border-white/[0.06] px-4 py-3 h-14">
       {onOpenSidebar && (
         <Button variant="ghost" size="icon-sm" onClick={onOpenSidebar} className="md:hidden">
           <Menu className="size-4" />
@@ -44,16 +53,16 @@ export function ChatHeader({
 
       <div className="flex items-center gap-2 min-w-0 flex-1">
         <ConnectionStatus status={connectionStatus} />
-        <h1 className="font-semibold text-sm truncate">{displayName}</h1>
-        <Badge variant="secondary" className="text-[10px] font-normal">
-          {userCount} {userCount === 1 ? "user" : "users"}
+        <h1 className="font-serif italic text-base truncate text-white/90">{displayName}</h1>
+        <Badge variant="secondary" className="text-[10px] font-normal bg-white/[0.06] text-white/40 border-0">
+          {userCount}
         </Badge>
       </div>
 
       <div className="flex items-center gap-1">
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground px-2">
+            <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-amber-500/50 px-2">
               <Clock className="size-3" />
               <span>{ttlMinutes}m</span>
             </div>
@@ -61,7 +70,16 @@ export function ChatHeader({
           <TooltipContent>Messages expire after {ttlMinutes} minutes</TooltipContent>
         </Tooltip>
 
-        <Separator orientation="vertical" className="h-4" />
+        {onStartCall && onJoinCall && (
+          <CallButton
+            callActive={callActive}
+            inCall={inCall}
+            onStartCall={onStartCall}
+            onJoinCall={onJoinCall}
+          />
+        )}
+
+        <Separator orientation="vertical" className="h-4 bg-white/[0.06]" />
 
         <Tooltip>
           <TooltipTrigger asChild>
