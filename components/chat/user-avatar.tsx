@@ -10,7 +10,7 @@ interface UserAvatarProps {
 export function UserAvatar({ username, size = "default", className }: UserAvatarProps) {
   return (
     <Avatar size={size} className={cn(className)}>
-      <AvatarFallback className="bg-muted text-muted-foreground text-xs uppercase">
+      <AvatarFallback className="bg-white/[0.08] text-white/40 text-xs uppercase">
         {username.charAt(0)}
       </AvatarFallback>
     </Avatar>
