@@ -2,8 +2,8 @@
   "$schema": "https://mintlify.com/schema.json",
   "name": "Fleet",
   "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
+    "light": "/public/logo-light.png",
+    "dark": "/public/logo-dark.png"
   },
   "favicon": "/favicon.ico",
   "colors": {
@@ -17,14 +17,10 @@
       "url": "https://github.com/aayushxr/fleet"
     }
   ],
-  "topbarCtaButton": {
-    "name": "Launch Fleet",
-    "url": "https://fleet.app"
-  },
   "navigation": [
     {
       "group": "Getting Started",
-      "pages": ["introduction", "quickstart", "self-hosting"]
+      "pages": ["introduction", "quickstart"]
     },
     {
       "group": "Core Concepts",
@@ -32,7 +28,13 @@
     },
     {
       "group": "Self-Hosting",
-      "pages": ["self-hosting/docker", "self-hosting/environment"]
+      "pages": [
+        "self-hosting/docker",
+        "self-hosting/digital-ocean",
+        "self-hosting/hetzner",
+        "self-hosting/aws",
+        "self-hosting/environment"
+      ]
     }
   ],
   "footerSocials": {

@@ -1,0 +1,108 @@
+---
+title: Hetzner
+description: Deploy Fleet on a Hetzner Cloud server.
+---
+
+Hetzner offers some of the best price-to-performance in the industry, with servers in both EU (Nuremberg, Falkenstein, Helsinki) and US (Ashburn, Hillsboro) regions.
+
+## What you'll need
+
+- A [Hetzner Cloud account](https://console.hetzner.cloud)
+- A domain name (optional, but recommended for HTTPS)
+
+## 1. Create a server
+
+1. Open the [Hetzner Cloud Console](https://console.hetzner.cloud)
+2. Click **Add Server**
+3. Choose a location close to your users
+4. Select **Ubuntu 24.04** as the OS image
+5. Pick the **CX22** type (2 vCPU / 4 GB RAM, ~€4/mo) — more than enough for Fleet
+6. Add your SSH key
+7. Click **Create & Buy Now**
+
+## 2. SSH into the server
+
+```bash
+ssh root@YOUR_SERVER_IP
+```
+
+## 3. Install Docker
+
+```bash
+curl -fsSL https://get.docker.com | sh
+```
+
+## 4. Clone and start Fleet
+
+```bash
+git clone https://github.com/aayushxr/fleet.git
+cd fleet
+docker compose up -d
+```
+
+Fleet is now running on port `3000`.
+
+## 5. Configure the firewall
+
+In the Hetzner Cloud Console, go to your server → **Networking → Firewalls → Create Firewall**:
+
+| Direction | Protocol | Port | Source       |
+|-----------|----------|------|--------------|
+| Inbound   | TCP      | 22   | Your IP      |
+| Inbound   | TCP      | 80   | Any          |
+| Inbound   | TCP      | 443  | Any          |
+
+Apply the firewall to your server.
+
+## 6. Point a domain (optional)
+
+Create an **A record** in your DNS provider pointing to your server's IP.
+
+## 7. Add HTTPS with nginx + Certbot
+
+```bash
+apt install -y nginx certbot python3-certbot-nginx
+```
+
+Create `/etc/nginx/sites-available/fleet`:
+
+```nginx
+server {
+    listen 80;
+    server_name fleet.yourdomain.com;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+```bash
+ln -s /etc/nginx/sites-available/fleet /etc/nginx/sites-enabled/
+nginx -t && systemctl reload nginx
+```
+
+Then obtain a free TLS certificate:
+
+```bash
+certbot --nginx -d fleet.yourdomain.com
+```
+
+## Updating Fleet
+
+```bash
+cd fleet
+git pull
+docker compose up -d --build
+```
+
+## IPv6
+
+Hetzner servers include IPv6 by default. If you want Fleet accessible over IPv6, add a `AAAA` DNS record pointing to your server's IPv6 address. Make sure nginx is also listening on IPv6 — the default Ubuntu nginx config includes `listen [::]:80` out of the box.

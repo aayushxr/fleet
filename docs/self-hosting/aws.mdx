@@ -1,0 +1,113 @@
+---
+title: AWS
+description: Deploy Fleet on an AWS EC2 instance.
+---
+
+## What you'll need
+
+- An AWS account
+- A domain name (optional, but recommended for HTTPS)
+- AWS CLI installed locally (optional)
+
+## 1. Launch an EC2 instance
+
+1. Open the [EC2 Console](https://console.aws.amazon.com/ec2) and click **Launch Instance**
+2. Give it a name (e.g. `fleet`)
+3. Select **Ubuntu Server 24.04 LTS** as the AMI
+4. Choose **t3.micro** (free tier eligible) or **t3.small** for more headroom
+5. Create or select a key pair for SSH access
+6. Under **Network settings**, create a security group with these inbound rules:
+
+| Type  | Protocol | Port | Source    |
+|-------|----------|------|-----------|
+| SSH   | TCP      | 22   | Your IP   |
+| HTTP  | TCP      | 80   | 0.0.0.0/0 |
+| HTTPS | TCP      | 443  | 0.0.0.0/0 |
+
+7. Leave storage at the default 8 GB gp3
+8. Click **Launch Instance**
+
+## 2. SSH into the instance
+
+```bash
+ssh -i your-key.pem ubuntu@YOUR_INSTANCE_IP
+```
+
+## 3. Install Docker
+
+```bash
+curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker ubuntu
+newgrp docker
+```
+
+## 4. Clone and start Fleet
+
+```bash
+git clone https://github.com/aayushxr/fleet.git
+cd fleet
+docker compose up -d
+```
+
+Fleet is now running on port `3000`.
+
+## 5. Assign an Elastic IP (recommended)
+
+By default, EC2 instances get a new public IP on every restart. To keep a stable IP:
+
+1. Go to **EC2 → Elastic IPs → Allocate Elastic IP**
+2. Click **Associate Elastic IP** and select your instance
+
+## 6. Point a domain (optional)
+
+Create an **A record** in Route 53 (or your DNS provider) pointing to the Elastic IP.
+
+## 7. Add HTTPS with nginx + Certbot
+
+```bash
+sudo apt install -y nginx certbot python3-certbot-nginx
+```
+
+Create `/etc/nginx/sites-available/fleet`:
+
+```nginx
+server {
+    listen 80;
+    server_name fleet.yourdomain.com;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+```bash
+sudo ln -s /etc/nginx/sites-available/fleet /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+Then obtain a free TLS certificate:
+
+```bash
+sudo certbot --nginx -d fleet.yourdomain.com
+```
+
+<Note>
+  Make sure ports 80 and 443 are open in your EC2 security group — Certbot needs port 80 to complete the ACME HTTP challenge for TLS certificate provisioning.
+</Note>
+
+## Updating Fleet
+
+```bash
+cd fleet
+git pull
+docker compose up -d --build
+```
+

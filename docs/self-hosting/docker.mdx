@@ -35,13 +35,29 @@ docker run -d \
 
 ## Reverse proxy
 
-To expose Fleet publicly, put it behind a reverse proxy (nginx, Caddy, etc.) that handles TLS.
+To expose Fleet publicly, put it behind nginx with Certbot for TLS. See the platform-specific guides for full setup instructions:
 
-### Caddy example
+- [DigitalOcean](/self-hosting/digital-ocean#7-add-https-with-nginx--certbot)
+- [Hetzner](/self-hosting/hetzner#7-add-https-with-nginx--certbot)
+- [AWS](/self-hosting/aws#7-add-https-with-nginx--certbot)
 
-```
-fleet.yourdomain.com {
-  reverse_proxy localhost:3000
+### nginx example
+
+```nginx
+server {
+    listen 80;
+    server_name fleet.yourdomain.com;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
 }
 ```
 

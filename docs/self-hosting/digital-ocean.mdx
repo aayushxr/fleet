@@ -1,0 +1,100 @@
+---
+title: DigitalOcean
+description: Deploy Fleet on a DigitalOcean Droplet.
+---
+
+## What you'll need
+
+- A [DigitalOcean account](https://cloud.digitalocean.com)
+- A domain name (optional, but recommended for HTTPS)
+
+## 1. Create a Droplet
+
+1. Go to **Create → Droplets**
+2. Choose **Ubuntu 24.04 LTS**
+3. Select the **Basic** plan — the **$6/mo (1 vCPU / 1 GB RAM)** size is sufficient for most deployments
+4. Choose a datacenter region close to your users
+5. Add your SSH key under **Authentication**
+6. Click **Create Droplet**
+
+## 2. SSH into the server
+
+```bash
+ssh root@YOUR_DROPLET_IP
+```
+
+## 3. Install Docker
+
+```bash
+curl -fsSL https://get.docker.com | sh
+```
+
+## 4. Clone and start Fleet
+
+```bash
+git clone https://github.com/aayushxr/fleet.git
+cd fleet
+docker compose up -d
+```
+
+Fleet is now running on port `3000`.
+
+## 5. Set up a firewall
+
+```bash
+ufw allow OpenSSH
+ufw allow 80
+ufw allow 443
+ufw enable
+```
+
+## 6. Point a domain (optional)
+
+Create an **A record** in your DNS provider pointing your domain to the Droplet's IP address.
+
+## 7. Add HTTPS with nginx + Certbot
+
+```bash
+apt install -y nginx certbot python3-certbot-nginx
+```
+
+Create `/etc/nginx/sites-available/fleet`:
+
+```nginx
+server {
+    listen 80;
+    server_name fleet.yourdomain.com;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+```bash
+ln -s /etc/nginx/sites-available/fleet /etc/nginx/sites-enabled/
+nginx -t && systemctl reload nginx
+```
+
+Then obtain a free TLS certificate:
+
+```bash
+certbot --nginx -d fleet.yourdomain.com
+```
+
+Certbot automatically edits your nginx config to enable HTTPS and sets up auto-renewal.
+
+## Updating Fleet
+
+```bash
+cd fleet
+git pull
+docker compose up -d --build
+```
