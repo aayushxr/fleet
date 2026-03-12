@@ -1,0 +1,42 @@
+---
+title: Rooms
+description: How Fleet rooms are created, shared, and destroyed.
+---
+
+## Creating a room
+
+Rooms in Fleet are created implicitly — there's no "create room" button. When you join a room name that doesn't exist, it's created on the spot. Share the room name with others and they'll join the same room.
+
+Room names are:
+- Case-insensitive (`Design-Review` and `design-review` are the same room)
+- Normalized: spaces become hyphens, everything lowercased
+- Not listed anywhere — you must know the name to join
+
+## Room lifecycle
+
+```
+User joins → Room created → Active while users are present
+                                        ↓
+                              Last user leaves / inactivity
+                                        ↓
+                              30-minute countdown begins
+                                        ↓
+                              Room + all messages destroyed
+```
+
+The TTL (time-to-live) countdown is visible in the room header and counts down in real time.
+
+## Concurrent users
+
+Multiple users can be in the same room simultaneously. The sidebar shows everyone currently connected, and a typing indicator appears when someone is composing a message.
+
+## Room expiry
+
+When a room expires:
+- All messages are permanently deleted
+- All connected users are disconnected
+- The room name becomes available again — joining it creates a fresh, empty room
+
+<Warning>
+  There is no way to recover a room or its messages after expiry. This is by design.
+</Warning>

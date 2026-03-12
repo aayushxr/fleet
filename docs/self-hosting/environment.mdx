@@ -1,0 +1,44 @@
+---
+title: Environment Variables
+description: Configuration options for your Fleet instance.
+---
+
+Fleet is designed to work with zero configuration, but the following environment variables are available for customization.
+
+## Variables
+
+<ParamField env="PORT" default="3000">
+  The port Fleet listens on.
+</ParamField>
+
+<ParamField env="NODE_ENV" default="development">
+  Set to `production` for production deployments. Enables Next.js production optimizations.
+</ParamField>
+
+<ParamField env="ROOM_TTL_MINUTES" default="30">
+  How many minutes a room survives after the last user leaves. Minimum: `1`.
+</ParamField>
+
+## Example `.env`
+
+```bash
+PORT=3000
+NODE_ENV=production
+ROOM_TTL_MINUTES=30
+```
+
+## Docker Compose
+
+Pass environment variables in `docker-compose.yml`:
+
+```yaml
+services:
+  fleet:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - ROOM_TTL_MINUTES=30
+```

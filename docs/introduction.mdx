@@ -1,0 +1,41 @@
+---
+title: Introduction
+description: Ephemeral, private chat rooms that vanish after 30 minutes.
+---
+
+# Fleet
+
+Fleet is a real-time chat application built around one idea: conversations that disappear. Every room is ephemeral — it and all its messages are gone within 30 minutes of the last activity.
+
+No accounts. No history. No traces.
+
+## Why Fleet?
+
+Most chat tools keep everything forever. Fleet does the opposite:
+
+- **Ephemeral by design** — rooms self-destruct after 30 minutes of inactivity
+- **No sign-up required** — pick a username and join a room, that's it
+- **Real-time** — messages appear instantly via WebSockets (Socket.IO)
+- **Private** — nothing is stored permanently on disk
+
+## How it works
+
+1. Enter a username and a room name on the home page
+2. Share the room name with whoever you want to invite
+3. Chat in real-time — everyone in the room sees messages as they're typed
+4. When the room expires, everything is gone
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="bolt" href="/quickstart">
+    Get Fleet running locally in under 2 minutes
+  </Card>
+  <Card title="Self-Hosting" icon="server" href="/self-hosting">
+    Deploy your own instance with Docker
+  </Card>
+  <Card title="Rooms" icon="comments" href="/concepts/rooms">
+    Learn how rooms work and expire
+  </Card>
+  <Card title="Privacy" icon="lock" href="/concepts/privacy">
+    Understand Fleet's privacy model
+  </Card>
+</CardGroup>

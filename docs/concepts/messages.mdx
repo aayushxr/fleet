@@ -1,0 +1,35 @@
+---
+title: Messages
+description: How messages work in Fleet.
+---
+
+## Sending messages
+
+Messages are delivered in real-time via Socket.IO WebSockets. When you send a message, all users currently in the room receive it instantly — no polling, no delays.
+
+## Typing indicators
+
+Fleet shows a typing indicator when other users are composing a message. The indicator appears below the message list and displays the usernames of everyone currently typing.
+
+Typing state is automatically cleared when:
+- A message is sent
+- The user stops typing for a few seconds
+
+## Message storage
+
+Messages are held **in memory only** — they are never written to disk or a database. This means:
+
+- Messages are only available for the lifetime of the server process
+- If the server restarts, all rooms and messages are lost
+- When a room expires, its messages are gone permanently
+
+<Info>
+  This is intentional. Fleet is designed for conversations that don't need to persist.
+</Info>
+
+## System messages
+
+The room displays system events inline with chat messages:
+
+- `alice joined` — when a user enters the room
+- `alice left` — when a user disconnects

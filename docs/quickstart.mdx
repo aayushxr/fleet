@@ -1,0 +1,53 @@
+---
+title: Quickstart
+description: Run Fleet locally in under 2 minutes.
+---
+
+## Prerequisites
+
+- [Bun](https://bun.sh) v1.0 or later
+- Node.js 18+
+
+## 1. Clone the repo
+
+```bash
+git clone https://github.com/aayushxr/fleet.git
+cd fleet
+```
+
+## 2. Install dependencies
+
+```bash
+bun install
+```
+
+## 3. Start the dev server
+
+```bash
+bun run dev
+```
+
+Fleet runs a combined Next.js + Socket.IO server. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## 4. Join a room
+
+1. Enter any username (e.g. `alice`)
+2. Enter a room name (e.g. `design-review`)
+3. Click **Join Room**
+4. Open a second browser tab, join the same room as a different user
+5. Start chatting
+
+<Note>
+  Room names are lowercased and spaces are replaced with hyphens automatically. `Design Review` becomes `design-review`.
+</Note>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Self-host with Docker" icon="docker" href="/self-hosting/docker">
+    Deploy Fleet to your own server
+  </Card>
+  <Card title="How rooms work" icon="comments" href="/concepts/rooms">
+    Learn about room lifecycle and expiry
+  </Card>
+</CardGroup>
