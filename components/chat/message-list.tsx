@@ -30,14 +30,9 @@ export function MessageList({ messages, currentUser, ttlMinutes }: MessageListPr
     >
       <div className="flex flex-col gap-1 py-4">
         {messages.length === 0 && (
-          <div className="flex flex-col items-center gap-2 py-20">
-            <p className="font-serif italic text-lg text-white/20">
-              Silence
-            </p>
-            <p className="text-[10px] uppercase tracking-[0.2em] text-white/15">
-              Be the first to speak
-            </p>
-          </div>
+          <p className="text-center text-sm text-muted-foreground py-12">
+            No messages yet. Start the conversation.
+          </p>
         )}
         {messages.map((entry) =>
           entry.kind === "system" ? (

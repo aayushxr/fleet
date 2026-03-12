@@ -6,7 +6,6 @@ import type {
   ChatEntry,
   User,
   RoomState,
-  CallState,
   ServerToClientEvents,
   ClientToServerEvents,
 } from "@/lib/types";
@@ -22,8 +21,6 @@ interface SocketState {
   typingUsers: string[];
   connectionStatus: ConnectionStatus;
   error: string | null;
-  userId: string;
-  callState: CallState;
 }
 
 type SocketAction =
@@ -35,16 +32,7 @@ type SocketAction =
   | { type: "ttl-updated"; payload: { ttlMinutes: number; entry: ChatEntry } }
   | { type: "messages-expired"; payload: string[] }
   | { type: "connection-status"; payload: ConnectionStatus }
-  | { type: "error"; payload: string }
-  | { type: "set-user-id"; payload: string }
-  | { type: "call-state-changed"; payload: CallState };
-
-const initialCallState: CallState = {
-  active: false,
-  participants: [],
-  startedAt: null,
-  startedBy: null,
-};
+  | { type: "error"; payload: string };
 
 const initialState: SocketState = {
   messages: [],
@@ -55,8 +43,6 @@ const initialState: SocketState = {
   typingUsers: [],
   connectionStatus: "connecting",
   error: null,
-  userId: "",
-  callState: initialCallState,
 };
 
 function reducer(state: SocketState, action: SocketAction): SocketState {
@@ -69,7 +55,6 @@ function reducer(state: SocketState, action: SocketAction): SocketState {
         roomName: action.payload.name,
         displayName: action.payload.displayName,
         ttlMinutes: action.payload.ttlMinutes,
-        callState: action.payload.callState,
         error: null,
       };
     case "new-message":
@@ -103,10 +88,6 @@ function reducer(state: SocketState, action: SocketAction): SocketState {
       return { ...state, connectionStatus: action.payload };
     case "error":
       return { ...state, error: action.payload };
-    case "set-user-id":
-      return { ...state, userId: action.payload };
-    case "call-state-changed":
-      return { ...state, callState: action.payload };
     default:
       return state;
   }
@@ -134,7 +115,6 @@ export function useSocket(roomName: string, username: string) {
         socket.disconnect();
         return;
       }
-      dispatch({ type: "set-user-id", payload: socket.id! });
       dispatch({ type: "connection-status", payload: "connected" });
       socket.emit("join-room", { roomName, username });
     });
@@ -162,7 +142,6 @@ export function useSocket(roomName: string, username: string) {
     socket.on("ttl-updated", (d) => !cancelled && dispatch({ type: "ttl-updated", payload: d }));
     socket.on("messages-expired", (ids) => !cancelled && dispatch({ type: "messages-expired", payload: ids }));
     socket.on("error", (d) => !cancelled && dispatch({ type: "error", payload: d.message }));
-    socket.on("call-state-changed", (cs) => !cancelled && dispatch({ type: "call-state-changed", payload: cs }));
 
     return () => {
       cancelled = true;
@@ -198,7 +177,6 @@ export function useSocket(roomName: string, username: string) {
 
   return {
     ...state,
-    socketRef,
     sendMessage,
     startTyping,
     stopTyping,

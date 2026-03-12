@@ -20,7 +20,7 @@ export function TypingIndicator({
 
   return (
     <div className="h-5 px-4">
-      <span className="text-[10px] text-amber-500/40 animate-pulse">{text}</span>
+      <span className="text-xs text-muted-foreground animate-pulse">{text}</span>
     </div>
   );
 }

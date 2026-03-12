@@ -1,12 +1,11 @@
 import { randomUUID } from "crypto";
-import type { User, Message, ChatEntry, SystemEvent, RoomState, CallParticipant, CallState } from "@/lib/types";
+import type { User, Message, ChatEntry, SystemEvent, RoomState } from "@/lib/types";
 import {
   DEFAULT_TTL_MINUTES,
   MAX_ROOM_CAPACITY,
   MAX_MESSAGES_PER_ROOM,
   MAX_MESSAGES_PER_MINUTE,
   TYPING_TIMEOUT_MS,
-  MAX_CALL_PARTICIPANTS,
 } from "./constants";
 
 interface InternalRoom {
@@ -23,7 +22,6 @@ class ChatStore {
   socketToRoom = new Map<string, string>();
   typingUsers = new Map<string, Map<string, ReturnType<typeof setTimeout>>>();
   messageRateLimit = new Map<string, number[]>();
-  callParticipants = new Map<string, Map<string, CallParticipant>>();
 
   normalizeRoomName(name: string): string {
     return name.toLowerCase().replace(/\s+/g, "-");
@@ -213,109 +211,8 @@ class ChatStore {
       if (room.activeUsers.size === 0) {
         this.rooms.delete(roomId);
         this.typingUsers.delete(roomId);
-        this.callParticipants.delete(roomId);
       }
     }
-  }
-
-  getCallState(roomId: string): CallState {
-    const participants = this.callParticipants.get(roomId);
-    if (!participants || participants.size === 0) {
-      return { active: false, participants: [], startedAt: null, startedBy: null };
-    }
-    const list = Array.from(participants.values());
-    return {
-      active: true,
-      participants: list,
-      startedAt: list[0].joinedCallAt,
-      startedBy: list[0].username,
-    };
-  }
-
-  startCall(roomId: string, socketId: string, username: string): { callState: CallState; entry: ChatEntry } | null {
-    const room = this.rooms.get(roomId);
-    if (!room) return null;
-
-    if (this.callParticipants.has(roomId) && this.callParticipants.get(roomId)!.size > 0) {
-      return null; // call already exists
-    }
-
-    const participant: CallParticipant = { userId: socketId, username, joinedCallAt: Date.now() };
-    const map = new Map<string, CallParticipant>();
-    map.set(socketId, participant);
-    this.callParticipants.set(roomId, map);
-
-    const event: SystemEvent = {
-      id: randomUUID(),
-      type: "call-join",
-      username,
-      timestamp: Date.now(),
-      content: "started a call",
-    };
-    const entry: ChatEntry = { ...event, kind: "system" };
-    room.messages.push(entry);
-
-    return { callState: this.getCallState(roomId), entry };
-  }
-
-  joinCall(roomId: string, socketId: string, username: string): { callState: CallState; entry: ChatEntry } | null {
-    const room = this.rooms.get(roomId);
-    if (!room) return null;
-
-    const participants = this.callParticipants.get(roomId);
-    if (!participants || participants.size === 0) return null;
-    if (participants.size >= MAX_CALL_PARTICIPANTS) return null;
-    if (participants.has(socketId)) return null;
-
-    const participant: CallParticipant = { userId: socketId, username, joinedCallAt: Date.now() };
-    participants.set(socketId, participant);
-
-    const event: SystemEvent = {
-      id: randomUUID(),
-      type: "call-join",
-      username,
-      timestamp: Date.now(),
-      content: "joined the call",
-    };
-    const entry: ChatEntry = { ...event, kind: "system" };
-    room.messages.push(entry);
-
-    return { callState: this.getCallState(roomId), entry };
-  }
-
-  leaveCall(socketId: string): { roomId: string; callState: CallState; entry: ChatEntry } | null {
-    for (const [roomId, participants] of this.callParticipants) {
-      const participant = participants.get(socketId);
-      if (!participant) continue;
-
-      participants.delete(socketId);
-      const room = this.rooms.get(roomId);
-      if (!room) continue;
-
-      if (participants.size === 0) {
-        this.callParticipants.delete(roomId);
-      }
-
-      const event: SystemEvent = {
-        id: randomUUID(),
-        type: "call-leave",
-        username: participant.username,
-        timestamp: Date.now(),
-        content: "left the call",
-      };
-      const entry: ChatEntry = { ...event, kind: "system" };
-      room.messages.push(entry);
-
-      return { roomId, callState: this.getCallState(roomId), entry };
-    }
-    return null;
-  }
-
-  isInCall(socketId: string): boolean {
-    for (const participants of this.callParticipants.values()) {
-      if (participants.has(socketId)) return true;
-    }
-    return false;
   }
 
   getRoomState(roomId: string): RoomState | null {
@@ -328,7 +225,6 @@ class ChatStore {
       users: Array.from(room.activeUsers.values()),
       messages: [...room.messages],
       createdAt: room.createdAt,
-      callState: this.getCallState(roomId),
     };
   }
 

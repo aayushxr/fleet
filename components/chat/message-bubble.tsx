@@ -43,7 +43,7 @@ export function MessageBubble({ message, isOwn, ttlMinutes }: MessageBubbleProps
         style={{ maxWidth: "min(70%, 32rem)" }}
       >
         {!isOwn && (
-          <span className="text-[10px] uppercase tracking-wider text-white/35 font-medium px-1">
+          <span className="text-xs text-muted-foreground font-medium px-1">
             {message.sender}
           </span>
         )}
@@ -51,15 +51,15 @@ export function MessageBubble({ message, isOwn, ttlMinutes }: MessageBubbleProps
           className={cn(
             "rounded-lg px-3 py-2 text-sm ttl-fade break-words whitespace-pre-wrap",
             isOwn
-              ? "bg-white/[0.1] text-white/90"
-              : "bg-white/[0.05] text-white/75"
+              ? "bg-primary text-primary-foreground"
+              : "bg-muted"
           )}
         >
           {message.content}
         </div>
         <Tooltip>
           <TooltipTrigger asChild>
-            <span className="text-[10px] text-white/20 px-1 cursor-default">
+            <span className="text-[10px] text-muted-foreground px-1 cursor-default">
               {relative}
             </span>
           </TooltipTrigger>

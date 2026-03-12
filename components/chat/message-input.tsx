@@ -41,7 +41,7 @@ export function MessageInput({ onSend, onTypingStart, onTypingStop, disabled }: 
   };
 
   return (
-    <div className="border-t border-white/[0.06] px-4 py-3">
+    <div className="border-t px-4 py-3">
       <div className="flex items-end gap-2">
         <Textarea
           value={value}
@@ -51,20 +51,20 @@ export function MessageInput({ onSend, onTypingStart, onTypingStop, disabled }: 
           onCompositionEnd={() => (composingRef.current = false)}
           placeholder="Type a message..."
           disabled={disabled}
-          className="min-h-[40px] max-h-[120px] resize-none border-white/[0.06] bg-white/[0.03] text-white/90 placeholder:text-white/20 focus-visible:border-white/15 focus-visible:ring-white/5"
+          className="min-h-[40px] max-h-[120px] resize-none"
           rows={1}
         />
         <Button
           size="icon"
           onClick={send}
           disabled={disabled || !value.trim()}
-          className="shrink-0 bg-white/[0.08] text-white/70 hover:bg-white/[0.12] hover:text-white/90 border-0"
+          className="shrink-0"
         >
           <SendHorizontal className="size-4" />
         </Button>
       </div>
       <div className="flex justify-end pt-1">
-        <span className="text-[10px] text-white/20">
+        <span className="text-[10px] text-muted-foreground">
           {value.length}/{MAX_MESSAGE_LENGTH}
         </span>
       </div>
