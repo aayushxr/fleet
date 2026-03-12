@@ -1,3 +1,5 @@
+![Fleet](docs/public/logo-dark.png)
+
 # fleet
 
 private, ephemeral chat rooms. pick a name, share a link, talk — everything disappears.
