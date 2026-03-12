@@ -1,6 +1,5 @@
-![Fleet](docs/public/logo-dark.png)
+<img src="docs/public/logo-dark.png" width="120" />
 
-# fleet
 
 private, ephemeral chat rooms. pick a name, share a link, talk — everything disappears.
 
